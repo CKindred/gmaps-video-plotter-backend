@@ -1,21 +1,10 @@
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
-
-const videos = {
-    videos: [
-        {
-            title: 'Placeholder title',
-            location: { lat: 55.3781, lng: -3.4360 },
-            videoURL: "https://www.youtube.com/embed/zoSJ3bNGPp0"
-        },
-        {
-            title: 'Placeholder title 2',
-            location: { lat: 51.7634, lng: -0.2231 },
-            videoURL: "https://www.youtube.com/embed/orMtwOz6Db0"
-        }
-    ]
-}
+const mongoose = require('mongoose');
+const Video = require('./api/models/video');
+const videoRoutes = require('./api/routes/videos');
+mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true });
 
 app.use(morgan('dev'));
 
@@ -32,8 +21,21 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use('/videos', videoRoutes);
+
 app.use((req, res, next) => {
-    res.status(200).json(videos);
+    const error = new Error('Not found');
+    error.status = 404;
+    next(error);
+});
+
+app.use((error, req, res, next) => {
+    res.status(error.status || 500);
+    res.json({
+        error: {
+            message: error.message
+        }
+    });
 });
 
 module.exports = app;
