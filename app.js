@@ -2,8 +2,11 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const mongoose = require('mongoose');
+
 const Video = require('./api/models/video');
 const videoRoutes = require('./api/routes/videos');
+const userRoutes = require('./api/routes/users');
+
 mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true });
 
 app.use(morgan('dev'));
@@ -21,8 +24,11 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/videos', videoRoutes);
+app.use(express.urlencoded());
+app.use(express.json());
 
+app.use('/videos', videoRoutes);
+app.use('/user', userRoutes);
 app.use((req, res, next) => {
     const error = new Error('Not found');
     error.status = 404;
